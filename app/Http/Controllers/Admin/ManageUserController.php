@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Yajra\DataTables\Facades\DataTables;
-
+use Illuminate\Support\Facades\Auth; 
 
 
 class ManageUserController extends Controller
@@ -129,4 +129,30 @@ class ManageUserController extends Controller
 
         return response()->json(['message' => 'Data user berhasil dihapus.'], 200);
     }
+
+    public function updateRole(Request $request, $id_user)
+{
+    // 1. Validasi Input
+    $validated = $request->validate([
+        'user_role' => 'required|in:admin,k3l,ukmbs,user', // Pastikan roles valid
+    ]);
+
+    // 2. Cari User
+    $user = User::find($id_user);
+
+    if (!$user) {
+        return response()->json(['error' => 'Data user tidak ditemukan'], 404);
+    }
+    
+    // Opsional: Larang Admin mengubah role-nya sendiri (opsi keamanan)
+    if ($user->id_user === Auth::id() && $user->user_role !== $validated['user_role']) {
+         return response()->json(['error' => 'Anda tidak bisa mengubah role Anda sendiri.'], 403);
+    }
+
+    // 3. Update Role
+    $user->user_role = $validated['user_role'];
+    $user->save();
+
+    return response()->json(['message' => 'Role user berhasil diubah menjadi ' . $user->user_role . '.'], 200);
+}
 }

@@ -9,9 +9,11 @@
                 Refresh</button>
         </a>
 
+        @canany(['isAdmin', 'isUkmbs'])
         <button type="button" class="btn btn-primary icon icon-left" onclick="openModal('add')"><i class="bi bi-plus-lg"></i>
             Tambah alat
         </button>
+        @endcanany
     </div>
 
     <section class="section">
@@ -42,6 +44,7 @@
 
     @push('script')
         <script>
+            const CAN_CRUD = {{ Auth::check() && (Auth::user()->user_role === 'admin' || Auth::user()->user_role === 'ukmbs') ? 'true' : 'false' }};
             function formatRupiah(angka) {
                 var reverse = angka.toString().split('').reverse().join('');
                 var ribuan = reverse.match(/\d{1,3}/g);
@@ -105,23 +108,20 @@
                         {
                             data: null,
                             render: function(data) {
-                                return `
-                                        <td>
-                                            <div style="margin-rigth=20px;">
-                                              @canany(['isAdmin','isUser'])
-                                                <button type="button" class="btn btn-info icon icon-left text-white" onclick="openModal('edit', '${data.id_alat}')">
-                                                    <i class="bi bi-pencil-square"></i>
-                                                </button>
+                                // 3. LOGIC JS UNTUK TOMBOL EDIT/HAPUS (DI DALAM TABEL)
+                                if (CAN_CRUD) {
+                                    return `
+                                        <button type="button" class="btn btn-info icon icon-left text-white" onclick="openModal('edit', '${data.id_alat}')">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </button>
 
-                                                <button type="button" class="btn btn-danger icon icon-left text-white" onclick="hapus_alat(${data.id_alat})">
-                                                    <i class="bi bi-trash"></i>
-                                                </button>
-                                            </div>
-                                            @else
-                                                <span class="text-muted">View only</span>
-                                            @endcanany
-                                        </td>
+                                        <button type="button" class="btn btn-danger icon icon-left text-white" onclick="hapus_alat(${data.id_alat})">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
                                     `;
+                                } else {
+                                    return '<span class="text-muted">View only</span>';
+                                }
                             }
                         }
                     ],

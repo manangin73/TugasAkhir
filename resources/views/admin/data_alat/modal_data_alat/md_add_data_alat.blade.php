@@ -134,90 +134,98 @@
         }
 
         function savealat(action, id_alat) {
-            const nama_alat = $('#nama_alat').val();
-            // const harga_sewa = $('#harga_sewa').val();
-            const tipe_alat = $('#tipe_alat').val();
-            const foto_alat = $('#foto_alat')[0].files[0];
-            const jumlah_alat = $('#jumlah_alat').val();
-            const biaya_perawatan = $('#biaya_perawatan').val();
+    const nama_alat = $('#nama_alat').val();
+    const tipe_alat = $('#tipe_alat').val();
+    
+    // --- PENGAMBILAN FILE: Ambil elemen dan file yang dipilih ---
+    const foto_alat_file = $('#foto_alat')[0].files[0]; 
+    // ---
 
-            if (action === 'add' && !foto_alat) {
-                Swal.fire({
-                    title: "Gagal simpan.",
-                    text: "Foto Alat wajib diisi saat menambah data baru!",
-                    icon: "error"
-                });
-                return;
-            }
-            // -----------------------------------------------------------
+    const jumlah_alat = $('#jumlah_alat').val();
+    const biaya_perawatan = $('#biaya_perawatan').val();
 
-            // Validasi input wajib lainnya (sudah ada)
-            if (!nama_alat || !tipe_alat || !jumlah_alat) {
-                Swal.fire({
-                    title: "Gagal simpan.",
-                    text: "Nama Alat, Tipe Alat, dan Jumlah Alat wajib diisi!",
-                    icon: "error"
-                });
-                return;
-            }
+    // 1. VALIDASI TAMBAH (ADD): Foto wajib diisi
+    if (action === 'add' && !foto_alat_file) {
+        Swal.fire({
+            title: "Gagal simpan.",
+            text: "Foto Alat wajib diisi saat menambah data baru!",
+            icon: "error"
+        });
+        return;
+    }
+    
+    // 2. VALIDASI WAJIB LAINNYA
+    if (!nama_alat || !tipe_alat || !jumlah_alat) {
+        Swal.fire({
+            title: "Gagal simpan.",
+            text: "Nama Alat, Tipe Alat, dan Jumlah Alat wajib diisi!",
+            icon: "error"
+        });
+        return;
+    }
 
-            const formData = new FormData();
-            formData.append('nama_alat', nama_alat);
-            // formData.append('harga_sewa', harga_sewa);
-            formData.append('tipe_alat', tipe_alat);
-            formData.append('foto_alat', foto_alat);
-            formData.append('jumlah_alat', jumlah_alat);
-            formData.append('biaya_perawatan', biaya_perawatan);
-            formData.append('_token', "{{ csrf_token() }}");
+    const formData = new FormData();
+    formData.append('nama_alat', nama_alat);
+    formData.append('tipe_alat', tipe_alat);
+    formData.append('jumlah_alat', jumlah_alat);
+    formData.append('biaya_perawatan', biaya_perawatan);
+    formData.append('_token', "{{ csrf_token() }}");
+    
+    // 3. LOGIC KRUSIAL: Tambahkan foto hanya jika file benar-benar dipilih.
+    // Jika mode EDIT dan field input file kosong, field 'foto_alat' TIDAK dikirimkan.
+    if (foto_alat_file) {
+        formData.append('foto_alat', foto_alat_file);
+    } 
 
-            const ajaxUrl = action === "add" ? "{{ url('/add_data_alat') }}" :
-                `{{ url('/edit_data_alat/${id_alat}') }}`;
+    // 4. Pengaturan URL AJAX
+    const ajaxUrl = action === "add" ? "{{ url('/add_data_alat') }}" :
+        `{{ url('/edit_data_alat/${id_alat}') }}`;
 
-            $.ajax({
-                url: ajaxUrl,
-                method: 'POST',
-                data: formData,
-                contentType: false,
-                processData: false,
-                success: function(response) {
-                    $('#tbDataAlat').DataTable().ajax.reload();
-                    $("#add_alat").modal("hide");
+    $.ajax({
+        url: ajaxUrl,
+        method: 'POST', // Menggunakan POST sesuai route Anda (/edit_data_alat/{id})
+        data: formData,
+        contentType: false, // Wajib untuk FormData
+        processData: false, // Wajib untuk FormData
+        success: function(response) {
+            $('#tbDataAlat').DataTable().ajax.reload();
+            $("#add_alat").modal("hide");
 
-                    const Toast = Swal.mixin({
-                        toast: true,
-                        position: "top-end",
-                        showConfirmButton: false,
-                        timer: 3000,
-                        timerProgressBar: true,
-                        didOpen: (toast) => {
-                            toast.onmouseenter = Swal.stopTimer;
-                            toast.onmouseleave = Swal.resumeTimer;
-                        }
-                    });
-
-                    Toast.fire({
-                        icon: "success",
-                        title: action === "add" ? "Data alat Berhasil Disimpan!" :
-                            "Data alat Berhasil Diubah!"
-                    });
-
-                    $nama_alat.val("");
-                    $tipe_alat.val("");
-                    $foto_alat.val("");
-                    $jumlah_alat.val("");
-                    $biaya_perawatan.val("");
-                    $output.hide();
-
-                },
-                error: function(xhr, status, error) {
-                    console.error('Terjadi kesalahan:', error);
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Oops...',
-                        text: 'Terjadi kesalahan saat memproses data.',
-                    });
+            const Toast = Swal.mixin({
+                toast: true,
+                position: "top-end",
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                didOpen: (toast) => {
+                    toast.onmouseenter = Swal.stopTimer;
+                    toast.onmouseleave = Swal.resumeTimer;
                 }
             });
+
+            Toast.fire({
+                icon: "success",
+                title: action === "add" ? "Data alat Berhasil Disimpan!" :
+                    "Data alat Berhasil Diubah!"
+            });
+
+            // Clear fields setelah sukses
+            $('#nama_alat').val("");
+            $('#tipe_alat').val("");
+            $('#foto_alat').val(""); // Reset input file
+            $('#jumlah_alat').val("");
+            $('#biaya_perawatan').val("");
+            $('#output').hide();
+        },
+        error: function(xhr, status, error) {
+            console.error('Terjadi kesalahan:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: 'Terjadi kesalahan saat memproses data.',
+            });
         }
+    });
+}
     </script>
 @endpush

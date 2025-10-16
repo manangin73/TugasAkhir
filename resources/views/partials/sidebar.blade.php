@@ -31,7 +31,7 @@
       @endcanany
 
       {{-- STUDIO MUSIK, JASA MUSIK, LAPORAN: ADMIN ONLY --}}
-      @can('isAdmin')
+      <!-- @canany(['isAdmin', 'isUkmbs'])
         {{-- Studio Musik --}}
         <li class="sidebar-item has-sub {{ request()->is('data_ruangan') || request()->is('data_peminjam_ruangan') ? 'active' : '' }}">
           <a href="#" class="sidebar-link">
@@ -74,7 +74,7 @@
             <span>Laporan</span>
           </a>
         </li>
-      @endcan
+      @endcanany -->
 
       {{-- ALAT MUSIK: Admin + K3L + UKMBS (view only utk K3L/UKMBS) --}}
       @canany(['isAdmin','isK3l','isUkmbs'])
@@ -112,7 +112,7 @@
       @endcan
 
       {{-- == UKMBS == --}}
-      @can('isUkmbs')
+      @canany(['isUkmbs','isAdmin'])
       <li class="sidebar-item has-sub {{ request()->routeIs('ukmbs.*') ? 'active' : '' }}">
         <a href="#" class="sidebar-link">
           <i class="bi bi-box-arrow-in-down"></i>
@@ -124,7 +124,7 @@
           </li>
         </ul>
       </li>
-      @endcan
+      @endcanany
 
       {{-- USER --}}
       @can('isUser')
@@ -194,14 +194,14 @@
       <li class="sidebar-title">AKUN USER</li>
 
       {{-- hanya admin penuh yang bisa kelola akun --}}
-      @can('isAdmin')
+      @canany(['isAdmin', 'isUkmbs'])
       <li class="sidebar-item {{ request()->is('data_user') ? 'active' : '' }}">
         <a href="{{ url('data_user') }}" class="sidebar-link">
-          <i class="bi bi-person-circle"></i>
+          <i class="bi bi-person-gear"></i>
           <span>Manage Akun User</span>
         </a>
       </li>
-      @endcan
+      @endcanany
 
       <li class="sidebar-item has-sub">
         <a href="#" class="sidebar-link">

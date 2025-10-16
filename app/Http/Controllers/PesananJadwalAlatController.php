@@ -278,36 +278,51 @@ class PesananJadwalAlatController extends Controller
     public function simpan_img_kondisi_alat(Request $r, string $id_pesanan)
     {
         $v = Validator::make($r->all(), [
-            'kondisi_awal'  => 'nullable|image|mimes:jpeg,png,jpg|max:1000',
-            'kondisi_akhir' => 'nullable|image|mimes:jpeg,png,jpg|max:1000',
+            'kondisi_awal'  => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'kondisi_akhir' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
-        if ($v->fails()) return response()->json(['message'=>'Validasi gagal.','errors'=>$v->errors()],422);
-
-        $d = DetailPesananJadwalAlatModel::where('id_pesanan_pinjam_alat',$id_pesanan)->firstOrFail();
-
+    
+        if ($v->fails()) {
+            return response()->json([
+                'message' => 'Validasi gagal.',
+                'errors' => $v->errors()
+            ], 422);
+        }
+    
+        $d = \App\Models\DetailPesananJadwalAlatModel::where('id_pesanan_pinjam_alat', $id_pesanan)
+            ->firstOrFail();
+    
+        // === Upload kondisi awal ===
         if ($r->hasFile('kondisi_awal')) {
-            $old = public_path('storage/img_upload/kondisi/awal/'.$d->img_kondisi_awal);
-            if ($d->img_kondisi_awal && file_exists($old)) @unlink($old);
-
-            $img  = $r->file('kondisi_awal');
-            $nama = 'awal-'.$id_pesanan.'.'.$img->getClientOriginalExtension();
-            $img->move(public_path('/storage/img_upload/kondisi/awal'), $nama);
+            $old = public_path('storage/img_upload/kondisi/awal/' . $d->img_kondisi_awal);
+            if ($d->img_kondisi_awal && file_exists($old)) {
+                @unlink($old);
+            }
+    
+            $img = $r->file('kondisi_awal');
+            $nama = 'awal-' . $id_pesanan . '.' . $img->getClientOriginalExtension();
+            $img->move(public_path('storage/img_upload/kondisi/awal'), $nama);
             $d->img_kondisi_awal = $nama;
         }
-
+    
+        // === Upload kondisi akhir ===
         if ($r->hasFile('kondisi_akhir')) {
-            $old = public_path('storage/img_upload/kondisi/akhir/'.$d->img_kondisi_akhir);
-            if ($d->img_kondisi_akhir && file_exists($old)) @unlink($old);
-
-            $img  = $r->file('kondisi_akhir');
-            $nama = 'akhir-'.$id_pesanan.'.'.$img->getClientOriginalExtension();
-            $img->move(public_path('/storage/img_upload/kondisi/akhir'), $nama);
+            $old = public_path('storage/img_upload/kondisi/akhir/' . $d->img_kondisi_akhir);
+            if ($d->img_kondisi_akhir && file_exists($old)) {
+                @unlink($old);
+            }
+    
+            $img = $r->file('kondisi_akhir');
+            $nama = 'akhir-' . $id_pesanan . '.' . $img->getClientOriginalExtension();
+            $img->move(public_path('storage/img_upload/kondisi/akhir'), $nama);
             $d->img_kondisi_akhir = $nama;
         }
-
+    
         $d->save();
-        return response()->json(['msg'=>'Upload gambar kondisi berhasil diperbarui'],200);
+    
+        return response()->json(['msg' => 'Upload gambar kondisi berhasil diperbarui'], 200);
     }
+    
 
     public function status_pesanan_pinjam_alat(Request $r, string $id)
     {

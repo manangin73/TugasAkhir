@@ -19,17 +19,17 @@ use App\Notifications\PeminjamanStatusNotification;
 
 class DataAlatController extends Controller
 {    
-        public function __construct()
-        {
-                $this->middleware(function ($request, $next) {
-                        $role = auth()->user()->user_role;
-                        if (in_array($request->route()->getActionMethod(), ['create','store','edit','update','destroy'])
-                                && in_array($role, ['ukmbs','k3l'])) {
-                                abort(403, 'Hanya admin/user yang diizinkan melakukan perubahan.');
-                        }
-                        return $next($request);
-                });
-        }
+      //   public function __construct()
+      //   {
+      //           $this->middleware(function ($request, $next) {
+      //                   $role = auth()->user()->user_role;
+      //                   if (in_array($request->route()->getActionMethod(), ['create','store','edit','update','destroy'])
+      //                           && in_array($role, ['ukmbs','k3l'])) {
+      //                           abort(403, 'Hanya admin/user yang diizinkan melakukan perubahan.');
+      //                   }
+      //                   return $next($request);
+      //           });
+      //   }
 
       public function index()
       {
@@ -61,7 +61,7 @@ class DataAlatController extends Controller
                   'biaya_perawatan' => "nullable",
                   
                   // Validasi untuk file foto saat menambah
-                  "foto_alat" => "nullable|image|mimes:png,jpg,jpeg|max:1028",
+                  "foto_alat" => "sometimes|nullable|image|mimes:png,jpg,jpeg|max:1028",
             ]);
 
             if ($validate->fails()) {
@@ -111,6 +111,8 @@ class DataAlatController extends Controller
 
       public function update(Request $request, string $id_alat)
       {
+           
+
             $validate = Validator::make($request->all(), [
                   "nama_alat" => "required",
                   "tipe_alat" => "required",
@@ -118,7 +120,7 @@ class DataAlatController extends Controller
                   'biaya_perawatan' => "nullable",
                   
                   // PERBAIKAN: Tambahkan validasi foto alat saat update
-                  "foto_alat" => "nullable|image|mimes:png,jpg,jpeg|max:1024", 
+                  "foto_alat" => "sometimes|nullable|image|mimes:png,jpg,jpeg,jpe,jfif,pjpeg|max:1024", 
             ]);
 
             if ($validate->fails()) {

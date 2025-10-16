@@ -86,7 +86,7 @@ Route::middleware('auth')->group(function () {
     | - Route modifikasi data (tetap admin only)
     |--------------------------------------------------------------------------
     */
-    Route::middleware('isAdmin')->group(function () {
+    Route::middleware('role:admin,ukmbs')->group(function () {
 
         // MASTER JASA MUSIK
         Route::get('/master_jasa_musik', [MasterJasaMusikController::class, 'index']);
@@ -155,6 +155,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/showById_data_user/{id_user}', [ManageUserController::class, 'showById']);
         Route::put('/edit_data_user/{id_user}', [ManageUserController::class, 'update']);
         Route::delete('/hapus_data_user/{id_user}', [ManageUserController::class, 'destroy']);
+        Route::put('/update_user_role/{id_user}', [ManageUserController::class, 'updateRole']); 
 
     });
 
@@ -187,7 +188,7 @@ Route::middleware('auth')->group(function () {
     | ADMIN UKMBS
     |--------------------------------------------------------------------------
     */
-    Route::middleware(['role:ukmbs'])
+    Route::middleware(['role:admin,ukmbs'])
         ->prefix('ukmbs')
         ->as('ukmbs.')
         ->group(function () {

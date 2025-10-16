@@ -164,4 +164,52 @@ class PeminjamanIterasi4Test extends TestCase
 
         $response->assertStatus(200);
     }
+    /** @test */
+    public function admin_berhasil_mengubah_role_user_biasa()
+    {
+        $targetUser = $this->guestUser; // User dengan role 'user'
+        $newRole = 'k3l';
+        
+        $response = $this->actingAs($this->admin)
+                         ->put("/update_user_role/{$targetUser->id_user}", [
+                             'user_role' => $newRole
+                         ]);
+
+        // 1. Assert Response
+        $response->assertStatus(200);
+        $response->assertJson(['message' => "Role user berhasil diubah menjadi {$newRole}."]);
+
+        // 2. Assert Database (Role harus berubah)
+        $this->assertDatabaseHas('users', [
+            'id_user' => $targetUser->id_user,
+            'user_role' => $newRole,
+        ]);
+    }
+    
+    // ----------------------------------------------------------------------
+    // US.AKN.x - TEST BARU: Admin Gagal Mengubah Role dengan Input Invalid
+    // ----------------------------------------------------------------------
+
+     /** @test */
+     public function admin_gagal_mengubah_role_dengan_input_invalid()
+     {
+         $targetUser = $this->guestUser;
+         $invalidRole = 'super_hacker'; // Role yang tidak ada di list validasi: in:admin,k3l,ukmbs,user
+ 
+         // 1. Action: Admin mencoba mengubah role dengan nilai invalid
+         $response = $this->actingAs($this->admin)
+                          ->put("/update_user_role/{$targetUser->id_user}", [
+                              'user_role' => $invalidRole
+                          ]);
+ 
+         // 2. Assert Response (Perbaikan: Mengharapkan 302 Redirect, bukan 422)
+         $response->assertStatus(302); 
+         $response->assertSessionHasErrors(['user_role']); // Memastikan error validasi ada di session
+         
+         // 3. Assert Database (Role tidak boleh berubah)
+         $this->assertDatabaseHas('users', [
+             'id_user' => $targetUser->id_user,
+             'user_role' => 'user', // Masih harus role lama
+         ]);
+     }
 }

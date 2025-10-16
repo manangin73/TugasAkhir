@@ -9,7 +9,7 @@
         <section class="row">
             <div class="col-12 col-lg-12">
                 <div class="row">
-                    <div class="col-6 col-lg-3 col-md-6">
+                    <!-- <div class="col-6 col-lg-3 col-md-6">
                         <div class="card h-75">
                             <div class="card-body px-4 py-4-5 d-flex flex-column ">
                                 <div class="row">
@@ -27,7 +27,7 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </div> -->
                     <div class="col-6 col-lg-3 col-md-6">
                         <div class="card h-75">
                             <div class="card-body px-4 py-4-5 d-flex flex-column ">
@@ -57,16 +57,31 @@
                                         </div>
                                     </div>
                                     <div class="col-md-8 col-lg-12 col-xl-12 col-xxl-7">
-                                        <h6 class="text-muted font-semibold"> <strong> Jasa Musik </strong> <br>
-                                            <?php echo strftime('%B', strtotime(date('M'))); ?>
-                                        </h6>
-                                        <h6 class="font-extrabold mb-0">{{ $jasa_musik_approve }}</h6>
+                                        <h6 class="text-muted font-semibold"><strong> Users </strong> <br> </h6>
+                                        <h6 class="font-extrabold mb-0">{{ $jumlah_user }}</h6>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="col-6 col-lg-3 col-md-6">
+                    <!-- <div class="col-6 col-lg-3 col-md-6">
+                        <div class="card h-75">
+                            <div class="card-body px-4 py-4-5 d-flex flex-column">
+                                <div class="row">
+                                    <div class="col-auto">
+                                        <div class="stats-icon blue mb-2">
+                                            <i class="iconly-boldProfile"></i>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-8 col-lg-12 col-xl-12 col-xxl-7">
+                                        <h6 class="text-muted font-semibold"><strong> Alat Dipinjam </strong> <br> </h6>
+                                        <h6 class="font-extrabold mb-0">{{ $jumlah_user }}</h6>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div> -->
+                    <!-- <div class="col-6 col-lg-3 col-md-6">
                         <div class="card h-75">
                             <div class="card-body px-4 py-4-5 d-flex flex-column">
                                 <div class="row">
@@ -83,8 +98,8 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="col-6 col-lg-3 col-md-6">
+                    </div> -->
+                    <!-- <div class="col-6 col-lg-3 col-md-6">
                         <div class="card h-75">
                             <div class="card-body px-4 py-4-5 d-flex flex-column">
                                 <div class="row">
@@ -100,7 +115,7 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </div> -->
                 </div>
                 <div class="row">
                     <div class="col-12">

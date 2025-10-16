@@ -5,7 +5,6 @@
 <div class="page-heading">
   <h3>Data Peminjaman Alat (UKMBS)</h3>
   <p>Halo, {{ auth()->user()->username }}! Berikut adalah daftar peminjaman alat yang sudah disetujui.</p>
- 
 </div>
 
 <div class="card">
@@ -32,10 +31,7 @@
     <button type="submit" class="btn btn-success">
         <i class="fas fa-file-excel me-2"></i> Export Excel
     </button>
-</form>
-
-
-
+  </form>
 
   <div class="card-body table-responsive">
     <table class="table table-sm align-middle">
@@ -80,11 +76,14 @@
             </button>
 
             @if($row->status_pengembalian === 'N')
-              <form class="d-inline" method="POST"
-                    action="{{ route('ukmbs.pengembalian', $row->id_pesanan_pinjam_alat) }}"
-                    onsubmit="return confirm('Proses pengembalian & kembalikan stok?');">
+              <form class="d-inline pengembalian-form"
+                    method="POST"
+                    action="{{ route('ukmbs.pengembalian', $row->id_pesanan_pinjam_alat) }}">
                 @csrf
-                <button class="btn btn-sm btn-success">Proses Pengembalian</button>
+                <input type="hidden" name="alat_list" value='@json($row->details->map(fn($d)=>["nama"=>$d->alat->nama_alat ?? "Alat","jumlah"=>$d->jumlah]))'>
+                <button type="submit" class="btn btn-sm btn-success">
+                  <i class="fas fa-undo me-1"></i> Proses Pengembalian
+                </button>
               </form>
             @else
               <button class="btn btn-sm btn-secondary" disabled>Selesai</button>
@@ -98,11 +97,65 @@
     </table>
 
     <div class="mt-3">
-                    {{ $items->withQueryString()->links('pagination::bootstrap-5') }}
-                </div>
+      {{ $items->withQueryString()->links('pagination::bootstrap-5') }}
+    </div>
   </div>
 </div>
 
 {{-- ===== Modal Detail UKMBS (upload kondisi awal/akhir, tanpa review) ===== --}}
 @include('admin_ukmbs.peminjaman.detail_ukmbs')
 @endsection
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+// Intercept semua form dengan class .pengembalian-form
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.pengembalian-form').forEach(form => {
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      // Ambil data alat dari input hidden JSON
+      const alatList = JSON.parse(this.querySelector('[name="alat_list"]').value);
+      let htmlList = '<ul style="text-align:left; list-style-type:disc; margin-left:20px;">';
+      alatList.forEach(item => {
+        htmlList += `<li><b>${item.nama}</b> (${item.jumlah})</li>`;
+      });
+      htmlList += '</ul>';
+
+      Swal.fire({
+        title: 'Konfirmasi Pengembalian',
+        html: `
+          <p>Pastikan alat berikut telah dikembalikan dengan kondisi baik:</p>
+          ${htmlList}
+          <p class="mt-2 fw-bold text-danger">Apakah kamu yakin ingin memproses pengembalian ini?</p>
+        `,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, kembalikan',
+        cancelButtonText: 'Batal',
+        confirmButtonColor: '#198754',
+        cancelButtonColor: '#6c757d',
+        reverseButtons: true
+      }).then((result) => {
+        if (result.isConfirmed) {
+          form.submit();
+        }
+      });
+    });
+  });
+});
+</script>
+
+@if(session('success'))
+<script>
+Swal.fire({
+  icon: 'success',
+  title: 'Berhasil',
+  text: '{{ session('success') }}',
+  timer: 2000,
+  showConfirmButton: false
+});
+</script>
+@endif
+@endpush
