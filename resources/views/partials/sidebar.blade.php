@@ -135,7 +135,7 @@
           </a>
         </li>
 
-        <li class="sidebar-item has-sub {{ request()->is('data_ruangan_studio') || request()->is('jadwal_studio_saya') ? 'active' : '' }}">
+        <!-- <li class="sidebar-item has-sub {{ request()->is('data_ruangan_studio') || request()->is('jadwal_studio_saya') ? 'active' : '' }}">
           <a href="#" class="sidebar-link">
             <i class="bi bi-calendar2-week"></i>
             <span>Studio Musik</span>
@@ -151,7 +151,7 @@
               <a href="{{ url('/tutorial_penggunaan_alat') }}" class="submenu-link">Tutorial Penggunaan Alat</a>
             </li>
           </ul>
-        </li>
+        </li> -->
 
         <li class="sidebar-item has-sub {{ request()->is('data_alat_user') || request()->is('alat_dipinjam') ? 'active' : '' }}">
           <a href="#" class="sidebar-link">
@@ -171,7 +171,7 @@
         @php
           $menu_jasa = DB::table('master_jasa_musik')->get();
         @endphp
-        <li class="sidebar-item has-sub {{ request()->is('pesanan_jasa_musik_saya') ? 'active' : '' }}">
+        <!-- <li class="sidebar-item has-sub {{ request()->is('pesanan_jasa_musik_saya') ? 'active' : '' }}">
           <a href="#" class="sidebar-link">
             <i class="bi bi-music-note-list"></i>
             <span>Jasa Musik</span>
@@ -188,7 +188,7 @@
               </li>
             @endforeach
           </ul>
-        </li>
+        </li> -->
       @endcan
 
       <li class="sidebar-title">AKUN USER</li>
