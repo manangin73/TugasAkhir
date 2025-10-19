@@ -11,6 +11,10 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Auth; 
+// --- PERBAIKAN FATAL ERROR: Tambahkan Facades yang Hilang ---
+use Illuminate\Support\Facades\Validator; 
+use Illuminate\Support\Facades\Storage; // Ditambahkan karena fitur destroy/update foto butuh ini
+// -----------------------------------------------------------
 
 
 class ManageUserController extends Controller
@@ -40,15 +44,19 @@ class ManageUserController extends Controller
      */
     public function store(Request $request)
     {
+        // Menggunakan $request->validate() yang sudah benar
         $validated = $request->validate([
             'username' => 'required|string|max:255',
             'no_wa'    => 'required|string|max:20',
             'email'    => 'required|email|max:255|unique:users,email',
             'password' => 'required|string|min:6',
+            // Tambahkan validasi user_role jika ada di form tambah
+            'user_role' => 'required|in:admin,k3l,ukmbs,user', 
         ]);
 
         $validated['password'] = Hash::make($validated['password']);
-        $validated['user_role'] = 'user';
+        
+        // Hapus: $validated['user_role'] = 'user'; jika sudah divalidasi di atas
 
         User::create($validated);
 
@@ -70,7 +78,7 @@ class ManageUserController extends Controller
     }
 
     /**
-     * Update data user
+     * Update data user (Termasuk Role)
      */
     public function update(Request $request, $id_user)
     {
@@ -80,26 +88,59 @@ class ManageUserController extends Controller
             if (!$user) {
                 return response()->json(['error' => 'Data user tidak ditemukan'], 404);
             }
-    
+            
+            // 1. VALIDASI INPUT (TERMASUK user_role)
             $validated = $request->validate([
                 'username' => 'required|string|max:255',
                 'no_wa'    => 'required|string|max:20',
-                'email'    => 'required|email|max:255|unique:users,email,' . $id_user . ',id_user',
+                // Unique email kecuali ID user saat ini
+                'email'    => 'required|email|max:255|unique:users,email,' . $id_user . ',id_user', 
                 'password' => 'nullable|string|min:6',
+                // Logika Role
+                'user_role' => 'required|in:admin,k3l,ukmbs,user', 
+                // Logika Foto
+                'foto_user' => 'nullable|image|mimes:png,jpg,jpeg|max:1024', 
             ]);
-    
+            
+            // 2. LOGIC UPDATE DATA & ROLE
+            
+            // Hapus field password jika kosong (mempertahankan password lama)
             if ($request->filled('password')) {
                 $validated['password'] = Hash::make($request->password);
             } else {
                 unset($validated['password']);
             }
-    
+            
+            // 3. LOGIC FOTO (Anda harus memasukkan ini jika ingin fitur upload foto berfungsi di method update)
+            if ($request->hasFile('foto_user')) {
+                // Hapus foto lama
+                if ($user->foto_user) {
+                    Storage::disk('public')->delete('img_upload/data_user/' . $user->foto_user);
+                }
+                
+                // Simpan foto baru
+                $img = $request->file('foto_user');
+                $nama_img = time() . '-' . str_replace(' ', '_', $validated['username']) . '.' . $img->getClientOriginalExtension();
+                $img->storeAs('img_upload/data_user', $nama_img, 'public');
+                $validated['foto_user'] = $nama_img;
+            } else {
+                // Hapus foto_user dari validated array jika tidak ada file baru (untuk mempertahankan foto lama)
+                unset($validated['foto_user']);
+            }
+            
+            // 4. JALANKAN UPDATE
             $user->update($validated);
     
             return response()->json(['message' => 'Data user berhasil diubah.'], 200);
     
         } catch (\Exception $e) {
-            Log::error('User update error: ' . $e->getMessage());
+            // Log::error('User update error: ' . $e->getMessage()); // Aktifkan ini untuk debugging server
+            
+            // Mengatasi Error Validasi untuk dikembalikan ke AJAX (Jika status 422)
+            if (isset($e->status) && $e->status === 422) {
+                 return response()->json(['msg' => $e->errors()], 422);
+            }
+
             return response()->json([
                 'error' => 'Terjadi kesalahan: ' . $e->getMessage(),
             ], 500);
@@ -111,6 +152,7 @@ class ManageUserController extends Controller
      */
     public function destroy($id_user)
     {
+        // ... (metode destroy tidak berubah) ...
         $user = User::find($id_user);
 
         if (!$user) {
@@ -131,28 +173,31 @@ class ManageUserController extends Controller
     }
 
     public function updateRole(Request $request, $id_user)
-{
-    // 1. Validasi Input
-    $validated = $request->validate([
-        'user_role' => 'required|in:admin,k3l,ukmbs,user', // Pastikan roles valid
-    ]);
+    {
+        // Catatan: Method ini sudah tidak diperlukan jika logic update role dipindahkan ke method update()
+        // Namun, jika route Anda masih menggunakannya, ini tetap harus ada.
+        
+        // 1. Validasi Input
+        $validated = $request->validate([
+            'user_role' => 'required|in:admin,k3l,ukmbs,user', 
+        ]);
 
-    // 2. Cari User
-    $user = User::find($id_user);
+        // 2. Cari User
+        $user = User::find($id_user);
 
-    if (!$user) {
-        return response()->json(['error' => 'Data user tidak ditemukan'], 404);
+        if (!$user) {
+            return response()->json(['error' => 'Data user tidak ditemukan'], 404);
+        }
+        
+        // Opsional: Larang Admin mengubah role-nya sendiri (opsi keamanan)
+        if ($user->id_user === Auth::id() && $user->user_role !== $validated['user_role']) {
+             return response()->json(['error' => 'Anda tidak bisa mengubah role Anda sendiri.'], 403);
+        }
+
+        // 3. Update Role
+        $user->user_role = $validated['user_role'];
+        $user->save();
+
+        return response()->json(['message' => 'Role user berhasil diubah menjadi ' . $user->user_role . '.'], 200);
     }
-    
-    // Opsional: Larang Admin mengubah role-nya sendiri (opsi keamanan)
-    if ($user->id_user === Auth::id() && $user->user_role !== $validated['user_role']) {
-         return response()->json(['error' => 'Anda tidak bisa mengubah role Anda sendiri.'], 403);
-    }
-
-    // 3. Update Role
-    $user->user_role = $validated['user_role'];
-    $user->save();
-
-    return response()->json(['message' => 'Role user berhasil diubah menjadi ' . $user->user_role . '.'], 200);
-}
 }

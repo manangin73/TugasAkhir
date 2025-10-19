@@ -23,7 +23,7 @@
                             <option value="user">USER (Peminjam)</option>
                             <option value="ukmbs">UKMBS (Admin Alat)</option>
                             <option value="k3l">K3L (Validator)</option>
-                            <option value="admin">ADMIN (Super Admin)</option>
+                            <!-- <option value="admin">ADMIN (Super Admin)</option> -->
                         </select>
                     </div>
                     
@@ -44,10 +44,10 @@
                         <label for="password">Password (Kosongkan jika tidak diubah)</label>
                         <input type="password" name="password" id="password" class="form-control">
                     </div>
-                    <div class="form-group">
+                    <!-- <div class="form-group">
                         <label for="foto_user">Foto Profil</label>
                         <input type="file" name="foto_user" id="foto_user" class="form-control">
-                    </div>
+                    </div> -->
 
                 </div>
                 <div class="modal-footer">

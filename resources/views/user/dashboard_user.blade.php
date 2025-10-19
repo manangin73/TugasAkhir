@@ -16,27 +16,66 @@
                                     <h2 class="accordion-header" id="headingOne">
                                         <button class="accordion-button" type="button" data-bs-toggle="collapse"
                                             data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-                                            <strong>Standar Operasional Prosedur (SOP)
+                                            <strong>Standar Operasional Prosedur (SOP) Alat Musik UKMBSM ITERA</strong>
                                         </button>
                                     </h2>
                                     <div id="collapseOne" class="accordion-collapse collapse show"
                                         aria-labelledby="headingOne" data-bs-parent="#accordionExample">
                                         <div class="accordion-body">
-                                            <strong>This is the first item's accordion body.</strong> It is shown by
-                                            default, until the collapse plugin adds the appropriate classes that we use to
-                                            style each element. These classes control the overall appearance, as well as the
-                                            showing and hiding via CSS transitions. You can modify any of this with custom
-                                            CSS or overriding our default variables. It's also worth noting that just about
-                                            any HTML can go within the <code>.accordion-body</code>, though the transition
-                                            does limit overflow.
-                                        </div>
+                                            
+                                            <h4>Prosedur Penyewaan Alat Studio Musik ITERA</h4>
+                                            <ol>
+                                                <li>Setiap penyewaan alat musik harus menghubungi narahubung divisi Studio dan Inventaris UKMBSM ITERA maksimal **H-5 sebelum hari pemakaian**. (No. WA: 089505177202 a/n Yafi Ahdi atau 081218449390 a/n Margaretha) .</li>
+                                                <li>Maksimal penyewaan alat adalah **2 hari** (terhitung 48 jam sejak peminjaman sampai pengembalian alat).</li>
+                                                <li>Setiap pengambilan dan pengembalian alat musik tidak melebihi pukul **17.00 WIB**.</li>
+                                                <li>Setiap penyewaan harus menyerahkan **jaminan berupa KTP/SIM** setiap meminjam alat studio musik ITERA.</li>
+                                                <li>Setiap **kerusakan** pada alat studio harus diganti dengan spesifikasi yang sama. Apabila tidak ada itikad baik atau pertanggungjawaban dari pihak penyewa yang melakukan kerusakan, maka akan diberikan sanksi berupa **blacklist** dari segala bentuk pemakaian studio maupun alat musik.</li>
+                                                <li>Alat musik hanya bisa disewa dalam lingkup **sivitas akademika ITERA**.</li>
+                                                <li>Setiap penyewaan alat harus diketahui oleh Kepala Divisi Studio dan Inventaris UKMBSM ITERA dan disetujui oleh Ketua Umum UKMBSM ITERA.</li>
+                                                <li>Setiap penyewaan alat dikenakan **biaya perawatan**.</li>
+                                            </ol>
+
+                                            <hr>
+
+                                            <h4>Tabel Biaya Perawatan Alat</h4>
+                                            <div class="table-responsive">
+                                                <table class="table table-striped table-bordered">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>No</th>
+                                                            <th>Nama Alat</th>
+                                                            <th>Satuan</th>
+                                                            <th>Biaya Perawatan</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr><td>1</td><td>Alat full set</td><td>1 set</td><td>Rp.500.000,00</td></tr>
+                                                        <tr><td>2</td><td>Gitar elektrik</td><td>1 buah</td><td>Rp.30.000,00</td></tr>
+                                                        <tr><td>3</td><td>Bass elektrik</td><td>1 buah</td><td>Rp.30.000,00</td></tr>
+                                                        <tr><td>4</td><td>Cajon</td><td>1 buah</td><td>Rp. 15.000,00</td></tr>
+                                                        <tr><td>5</td><td>Mixer 6 port</td><td>1 buah</td><td>Rp.50.000,00</td></tr>
+                                                        <tr><td>6</td><td>Speaker</td><td>1 buah</td><td>Rp.50.000,00</td></tr>
+                                                        <tr><td>7</td><td>Speaker monitor</td><td>1 buah</td><td>Rp.60.000,00</td></tr>
+                                                        <tr><td>8</td><td>Amplifire gitar/ DI box</td><td>1 buah</td><td>Rp.50.000,00</td></tr>
+                                                        <tr><td>9</td><td>Amplifire Bass / DI box</td><td>1 buah</td><td>Rp.50.000,00</td></tr>
+                                                        <tr><td>10</td><td>Amplifire keyboard</td><td>1 buah</td><td>Rp.50.000,00</td></tr>
+                                                        <tr><td>11</td><td>Keyboard</td><td>1 buah</td><td>Rp.150.000,00</td></tr>
+                                                        <tr><td>12</td><td>Drum akustik</td><td>1 set</td><td>Rp.250.000,00</td></tr>
+                                                        <tr><td>13</td><td>Drum elektrik</td><td>1 set</td><td>Rp.200.000,00</td></tr>
+                                                        <tr><td>14</td><td>Mic</td><td>1 buah</td><td>Rp.10.000,00</td></tr>
+                                                        <tr><td>15</td><td>Stand micbook/</td><td>1 buah</td><td>Rp.5.000,00</td></tr>
+                                                        <tr><td>16</td><td>Kabel jack/XLR/AUX</td><td>1 buah</td><td>Rp.5.000,00</td></tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            </div>
                                     </div>
                                 </div>
                                 <div class="accordion-item">
                                     <h2 class="accordion-header" id="headingTwo">
                                         <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                                             data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-                                            <strong>Sejarah Studio Musik ITERA
+                                            <strong>Sejarah Studio Musik ITERA</strong>
                                         </button>
                                     </h2>
                                     <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo"
@@ -49,6 +88,7 @@
                                                 non-akademik seluruh civitas akedemika ITERA. Berlokasi di Gedung D Lantai
                                                 3,
                                                 tepat di ruangan ujung lantai.
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -58,60 +98,7 @@
                 </div>
 
                 <div class="row">
-                    <div class="col-12">
-                        <div class="card">
-                            <div class="card-header">
-                                <h4>Informasi Terbaru</h4>
-                            </div>
-                            <div class="card-body">
-                                <div id="carouselExampleCaptions" class="carousel slide" data-bs-ride="carousel">
-                                    <div class="carousel-indicators">
-                                        <button type="button" data-bs-target="#carouselExampleCaptions"
-                                            data-bs-slide-to="0" class="active" aria-current="true"
-                                            aria-label="Slide 1"></button>
-                                        <button type="button" data-bs-target="#carouselExampleCaptions"
-                                            data-bs-slide-to="1" aria-label="Slide 2"></button>
-                                        <button type="button" data-bs-target="#carouselExampleCaptions"
-                                            data-bs-slide-to="2" aria-label="Slide 3"></button>
-                                    </div>
-                                    <div class="carousel-inner">
-                                        @foreach ($display as $key => $dp)
-                                            @if ($key == 0)
-                                                <div class="carousel-item active">
-                                                    <img src="{{ asset('storage/img_upload/jasa_musik/' . $dp->gambar) }}"
-                                                        class="d-block w-100" alt="..." style="height: 600px">
-                                                    <div class="carousel-caption d-none d-md-block">
-                                                        <h5>{{ $dp->nama_jenis_jasa }}</h5>
-                                                        <p class="text-white">{{ $dp->deskripsi }}</p>
-                                                    </div>
-                                                </div>
-                                            @else
-                                                <div class="carousel-item">
-                                                    <img src="{{ asset('storage/img_upload/jasa_musik/' . $dp->gambar) }}"
-                                                        class="d-block w-100" alt="...">
-                                                    <div class="carousel-caption d-none d-md-block">
-                                                        <h5>{{ $dp->nama_jenis_jasa }}</h5>
-                                                        <p class="text-white">{{ $dp->deskripsi }}</p>
-                                                    </div>
-                                                </div>
-                                            @endif
-                                        @endforeach
-                                    </div>
-                                    <button class="carousel-control-prev" type="button"
-                                        data-bs-target="#carouselExampleCaptions" data-bs-slide="prev">
-                                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                                        <span class="visually-hidden">Previous</span>
-                                    </button>
-                                    <button class="carousel-control-next" type="button"
-                                        data-bs-target="#carouselExampleCaptions" data-bs-slide="next">
-                                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                                        <span class="visually-hidden">Next</span>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
                     </div>
-                </div>
             </div>
         </section>
     </div>

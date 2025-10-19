@@ -24,14 +24,6 @@
                     <input type="hidden" value="{{ Auth::user()->id_user }}" name="id_user" id="id_user">
                 </div>
 
-                <!-- <div class="form-group row">
-                    <div class="col-12">
-                        <label for="id_alat">Alat Yang Dipinjam</label>
-                        <select name="id_alat" id="id_alat" class="form-control" multiple onchange="selectAlat()">
-                            <option value="">Pilih Alat</option>
-                        </select>
-                    </div>
-                </div> -->
                 <form class="repeater">
                     <div data-repeater-list="list_alat">
                         <div data-repeater-item>
@@ -47,7 +39,7 @@
                                 <div class="col-12">
                                     <label for="jumlah">Jumlah Dipinjam</label>
                                     <input type="number" id="jumlah" name="jumlah" class="form-control" onchange="selectAlat()">
-                                       
+                                        
                                     </input>
                                 </div>
                             </div>
@@ -59,7 +51,7 @@
 
                 <div class="form-group">
                     <label for="tgl_pinjam">Tanggal Peminjaman <small class="text-danger fst-italic">*harap pilih
-                            alat dahulu</small></label>
+                                alat dahulu</small></label>
                     <input type="date" class="form-control" id="tgl_pinjam" required >
                     <span id="alert_tgl"></span>
                 </div>
@@ -88,11 +80,10 @@
 
                 <div class="form-group">
                     <label for="foto_jaminan">Jaminan (KTP/KTM) (Format: JPG/PNG) <small class="text-danger fst-italic">(max: 1
-                            mb)</small></label>
-                    <input type="file" class="image-preview-filepond form-control" id="foto_jaminan" required>
-
+                                mb)</small></label>
+                    <input type="file" class="image-preview-filepond form-control" id="foto_jaminan" **required**>
                     <p class="my-3 output"><img id="output"
-                            style="display: none; max-width: 200px; max-height: 200px;" />
+                                style="display: none; max-width: 200px; max-height: 200px;" />
                     </p>
                 </div>
             </div>
@@ -150,7 +141,7 @@
         const qs = new URLSearchParams({
             start,
             end: end || start,
-            mulai:  (mulai   || '00:00'),
+            mulai:  (mulai  || '00:00'),
             selesai:(selesai || '23:59')
         });
         const res = await $.getJSON(`{{ route('ketersediaan.data') }}?${qs.toString()}`);
@@ -192,42 +183,7 @@
     });
 
     // function cek_tanggal_kosong() {
-        //     let tgl_pinjam = $("#tgl_pinjam").val();
-        //     let tgl_kembali = $("#tgl_kembali").val();
-        //     let id_alat = $("#id_alat").val();
-        //     let waktu_mulai = $("#waktu_mulai").val();
-        //     let waktu_selesai = $("#waktu_selesai").val();
-
-        //     $.ajax({
-        //         url: `{{ url('cek_tanggal_kosong') }}`,
-        //         method: 'post',
-        //         data: {
-        //             "tgl_pinjam": tgl_pinjam,
-        //             "tgl_kembali": tgl_kembali,
-        //             "id_alat": id_alat,
-        //             "waktu_mulai": waktu_mulai,
-        //             "waktu_selesai": waktu_selesai,
-        //             "_token": "{{ csrf_token() }}"
-        //         },
-        //         dataType: 'json',
-        //         success: function(response) {
-        //             if (response.length === 0) {
-        //                 $("#alert_tgl").html(`<small class="text-success fst-italic"><i class="bi bi-check-square"></i> Tanggal tersebut kosong
-        //                 !</small>`);
-        //             } else if (response.status == "ada" || response.status == "ada2") {
-        //                 $("#alert_tgl").html(`<small class="text-danger fst-italic"><i
-        //                     class="bi bi-exclamation-triangle-fill"></i> Tanggal tersebut sudah di BOOKING
-        //                 !</small>`);
-        //             } else if (response.status == "weekend") {
-        //                 $("#alert_tgl").html(`<small class="text-danger fst-italic"><i
-        //                     class="bi bi-exclamation-triangle-fill"></i> Tidak bisa di hari SABTU dan Minggu
-        //                 !</small>`);
-        //             }
-        //         },
-        //         error: function(err) {
-        //             // reject(err);
-        //         }
-        //     });
+        //         // ... (kode di-comment)
         // }
 
     function selectAlat() {
@@ -318,6 +274,7 @@
                 $("#waktu_mulai").val(response.waktu_mulai);
                 $("#waktu_selesai").val(response.waktu_selesai);
                 $("#ket_keperluan").val(response.ket_keperluan);
+                // Menampilkan preview foto lama
                 $('#output').attr('src', '{{ asset('storage/img_upload/pesanan_jadwal') }}/' + response.foto_jaminan).show();
             },
             error: function() {
@@ -328,13 +285,14 @@
 
     // === versi menampilkan NAMA alat saat stok kurang
     async function saveJadwalAlat(action, id) {
-        const id_user       = $('#id_user').val();
+        const id_user     = $('#id_user').val();
         const tgl_pinjam    = $('#tgl_pinjam').val();
         const tgl_kembali   = $('#tgl_kembali').val() || $('#tgl_pinjam').val();
         const waktu_mulai   = $('#waktu_mulai').val();
         const waktu_selesai = $('#waktu_selesai').val();
         const ket_keperluan = $('#ket_keperluan').val();
         const no_wa         = $('#no_wa').val();
+        // Ambil file foto jaminan
         const foto_jaminan  = $('#foto_jaminan')[0]?.files[0] || null;
 
         const list_alat = [];
@@ -347,25 +305,37 @@
             const jumlah  = $(this).find('input[name$="[jumlah]"], input[name="jumlah"]').val();
 
             if (id_alat && jumlah && Number(jumlah) > 0) {
-            const idStr = String(id_alat);
-            list_alat.push({ id_alat: idStr, jumlah: Number(jumlah), nama });
-            if (!namaMap[idStr]) namaMap[idStr] = nama || `Alat ID ${idStr}`;
+                const idStr = String(id_alat);
+                list_alat.push({ id_alat: idStr, jumlah: Number(jumlah), nama });
+                if (!namaMap[idStr]) namaMap[idStr] = nama || `Alat ID ${idStr}`;
             }
         });
 
+        // 1. Validasi Field Wajib & Daftar Alat
         if (!list_alat.length || !tgl_pinjam || !waktu_mulai || !waktu_selesai || !ket_keperluan) {
             Swal.fire({ icon:'error', title:'Gagal simpan', text:'Lengkapi data & pilih minimal satu alat.' });
             return;
         }
 
-        const sisaMap = await cekSisaPeriode(tgl_pinjam, tgl_kembali);
+        // 2. 🔥 VALIDASI FOTO JAMINAN (Wajib diisi saat 'add') 🔥
+        if (action === 'add' && !foto_jaminan) {
+            Swal.fire({ 
+                icon: 'error', 
+                title: 'Gagal simpan', 
+                text: 'Foto Jaminan (KTP/KTM) wajib diisi untuk pengajuan baru.' 
+            });
+            return; // Hentikan proses jika validasi gagal
+        }
+
+        // Lanjutkan ke pengecekan stok/periode
+        const sisaMap = await cekSisaPeriode(tgl_pinjam, tgl_kembali, waktu_mulai, waktu_selesai);
 
         const agregat = {};
-            list_alat.forEach(it => {
+        list_alat.forEach(it => {
             const sisa = Number(sisaMap?.[it.id_alat] ?? 0);
             if (it.jumlah > sisa) {
                 if (!agregat[it.id_alat]) {
-                agregat[it.id_alat] = { nama: namaMap[it.id_alat] || `Alat ID ${it.id_alat}`, diminta: 0, sisa };
+                    agregat[it.id_alat] = { nama: namaMap[it.id_alat] || `Alat ID ${it.id_alat}`, diminta: 0, sisa };
                 }
                 agregat[it.id_alat].diminta += it.jumlah;
                 agregat[it.id_alat].sisa = sisa;
@@ -381,6 +351,7 @@
             return;
         }
 
+        // Jika semua validasi lolos, submit form
         submitForm(action, id, {
             id_user, list_alat, tgl_pinjam, tgl_kembali, waktu_mulai, waktu_selesai, ket_keperluan, foto_jaminan, no_wa
         });
@@ -433,6 +404,17 @@
                 let msg = "Terjadi kesalahan saat menghubungi server.";
                 if (xhr.responseJSON?.message) msg = xhr.responseJSON.message;
                 else if (xhr.responseText) msg = xhr.responseText;
+                // Cek jika errornya adalah error validasi (status 422)
+                if (xhr.status === 422 && xhr.responseJSON.errors) {
+                    const validationErrors = xhr.responseJSON.errors;
+                    // Cek error spesifik untuk foto jaminan dari Server
+                    if (validationErrors.foto_jaminan) {
+                        msg = 'Error Server: Foto Jaminan ' + validationErrors.foto_jaminan.join(', ');
+                    } else {
+                        // Gabungkan semua pesan error validasi lainnya
+                        msg = Object.values(validationErrors).flat().join('<br>');
+                    }
+                }
                 Swal.fire({ icon: 'error', title: 'Oops...', html: `<pre style="text-align:left;white-space:pre-wrap">${msg}</pre>` });
             }
         });

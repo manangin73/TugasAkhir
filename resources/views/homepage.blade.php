@@ -16,7 +16,7 @@
     <link href="https://fonts.googleapis.com/css?family=Rufina:400,700" rel="stylesheet">
 
     <!-- title of site -->
-    <title>Sistem Informasi Manajemen Studio Musik ITERA</title>
+    <title>Sistem Informasi Peminjaman Alat Musik Studio Musik ITERA</title>
     <link rel="icon" href="{{ asset('assets/img/logo-itera.png') }}" type="png" />
 
     <!--font-awesome.min.css-->

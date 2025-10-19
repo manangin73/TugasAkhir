@@ -54,11 +54,12 @@ class PesananJadwalAlatController extends Controller
         }
 
         foreach ($cek as $row) {
-            if ($row->status_peminjaman === "Y" && $row->status_pengajuan === "Y" && $row->status_persetujuan === "Y") {
+            // Asumsi: status_persetujuan adalah status utama
+            if ($row->status_persetujuan === "Y") {
                 return response()->json(["status" => "ada"]);
             }
-            if ($row->status_persetujuan !== "N" && $row->status_pengajuan === "Y") {
-                return response()->json(["status" => "ada2"]);
+            if ($row->status_persetujuan === "P") {
+                 return response()->json(["status" => "ada2"]); // Status masih menunggu persetujuan
             }
         }
         return response()->json([]);
@@ -87,57 +88,109 @@ class PesananJadwalAlatController extends Controller
 
     public function store(Request $r)
     {
+        // 1. Validasi Input Dasar
         $v = \Validator::make($r->all(), [
             'id_user'       => 'required|integer',
-            'tgl_pinjam'    => 'required|date',
+            'tgl_pinjam'    => 'required|date|after_or_equal:today', 
             'tgl_kembali'   => 'nullable|date|after_or_equal:tgl_pinjam',
             'waktu_mulai'   => 'required',
             'waktu_selesai' => 'required',
             'ket_keperluan' => 'required|string',
-            'foto_jaminan'  => 'nullable|image|mimes:png,jpg,jpeg|max:1024',
-
-            'list_alat'     => 'nullable',
-            'list-alat'     => 'nullable',
-            'id_alat'       => 'nullable|integer',
-            'jumlah'        => 'nullable|integer|min:1',
+            'foto_jaminan'  => 'required|image|mimes:png,jpg,jpeg|max:1024', 
+            
+            // Validasi repeater field
+            'list_alat'             => 'required|array|min:1',
+            'list_alat.*.id_alat'   => 'required|integer|exists:data_alat,id_alat',
+            'list_alat.*.jumlah'    => 'required|integer|min:1',
         ]);
         if ($v->fails()) return response()->json(['msg'=>$v->errors()], 422);
 
+
+        // 2.  Validasi Aturan Bisnis Khusus Tanggal & Waktu 
+        $today = Carbon::today()->startOfDay();
+        $tglPinjam = $r->input('tgl_pinjam');
+        $waktuMulai = $r->input('waktu_mulai');
+        $tglKembali = $r->input('tgl_kembali', $tglPinjam);
+        $waktuSelesai = $r->input('waktu_selesai');
+
+        try {
+            $startDateTime = Carbon::parse($tglPinjam . ' ' . $waktuMulai);
+            $endDateTime = Carbon::parse($tglKembali . ' ' . $waktuSelesai);
+            $tglPinjamOnly = Carbon::parse($tglPinjam)->startOfDay();
+        } catch (\Exception $e) {
+            return response()->json([
+                'errors' => ['waktu_mulai' => ['Format tanggal atau waktu tidak valid.']]
+            ], 422);
+        }
+
+        // --- Validasi 5 Hari Minimum Lead Time ---
+        // Aturan: tgl_pinjam HARUS minimal 5 hari setelah hari ini.
+        $minTglPinjam = $today->copy()->addDays(5);
+        
+        if ($tglPinjamOnly->lt($minTglPinjam)) {
+            return response()->json([
+                'errors' => [ 
+                    'tgl_pinjam' => [
+                        'Pengajuan harus dilakukan minimal 5 hari sebelum tanggal peminjaman. Tanggal peminjaman paling cepat adalah ' . $minTglPinjam->format('d-m-Y') . '.'
+                    ]
+                ]
+            ], 422);
+        }
+
+        // ---  Validasi MAKSIMAL 48 Jam Durasi  ---
+        // Aturan: Durasi peminjaman tidak boleh lebih dari 48 jam (dihitung berdasarkan DateTime)
+        $durationSeconds = $startDateTime->diffInSeconds($endDateTime);
+        $maxDurationSeconds = 48 * 3600; // 48 jam dalam detik
+        $maxEndDateTime = $startDateTime->copy()->addHours(48);
+
+        // Operator perbandingan diubah menjadi > (lebih dari) untuk memastikan maksimal 48 jam
+        if ($durationSeconds > $maxDurationSeconds) { 
+            return response()->json([
+                'errors' => [ 
+                    'tgl_kembali' => [
+                        'Durasi peminjaman maksimal 48 jam. Pengembalian paling lambat adalah ' . $maxEndDateTime->format('d-m-Y H:i') . ' WIB.'
+                    ]
+                ]
+            ], 422);
+        }
+        
+        // --- Validasi Waktu Selesai Tidak Boleh Sebelum Waktu Mulai (Cross Check) ---
+        if ($startDateTime->gt($endDateTime)) {
+             return response()->json([
+                'msg' => [
+                    'waktu_selesai' => ['Tanggal dan Waktu pengembalian tidak boleh sebelum Tanggal dan Waktu peminjaman.']
+                ]
+            ], 422);
+        }
+        //  AKHIR VALIDASI KHUSUS 
+
+
         \DB::beginTransaction();
         try {
-            $p = new \App\Models\PesananJadwalAlatModel();
+            $p = new PesananJadwalAlatModel();
             $p->id_user             = (int)$r->id_user;
-            $p->tgl_pinjam          = $r->tgl_pinjam;
-            $p->tgl_kembali         = $r->tgl_kembali ?: $r->tgl_pinjam;
-            $p->waktu_mulai         = $r->waktu_mulai;
-            $p->waktu_selesai       = $r->waktu_selesai;
+            $p->tgl_pinjam          = $tglPinjam;
+            $p->tgl_kembali         = $tglKembali;
+            $p->waktu_mulai         = $waktuMulai;
+            $p->waktu_selesai       = $waktuSelesai;
             $p->ket_keperluan       = $r->ket_keperluan;
             $p->status_persetujuan  = 'P';
             $p->status_pengembalian = 'N';
             $p->ket_admin           = '';
 
+            // Penanganan File Jaminan
             if ($r->hasFile('foto_jaminan')) {
                 $img  = $r->file('foto_jaminan');
                 $nama = ($r->tgl_pinjam ?? date('Y-m-d')).'-Jaminan-'.$r->id_user.'.'.$img->getClientOriginalExtension();
                 $img->move(public_path('/storage/img_upload/pesanan_jadwal'), $nama);
                 $p->foto_jaminan = $nama;
+            } else {
+                $p->foto_jaminan = null;
             }
             $p->save();
 
-            $raw = $r->input('list_alat', $r->input('list-alat', null));
-            if ($raw === null && $r->filled('id_alat')) {
-                $raw = [[
-                    'id_alat' => (int)$r->id_alat,
-                    'jumlah'  => (int)$r->input('jumlah', 1),
-                ]];
-            }
-            if (is_string($raw)) {
-                $dec = json_decode($raw, true);
-                if (json_last_error() === JSON_ERROR_NONE) $raw = $dec;
-            }
-            if (is_object($raw)) $raw = [$raw];
-            if (!is_array($raw))  $raw = (array)$raw;
-
+            // Penanganan Detail Alat (Repeater)
+            $raw = $r->input('list_alat');
             $items = collect($raw)->map(function ($row) {
                     if (is_string($row)) {
                         $tmp = json_decode($row, true);
@@ -159,7 +212,7 @@ class PesananJadwalAlatController extends Controller
             }
 
             foreach ($items as $it) {
-                \App\Models\DetailPesananJadwalAlatModel::create([
+                DetailPesananJadwalAlatModel::create([
                     'id_pesanan_pinjam_alat' => $p->id_pesanan_pinjam_alat,
                     'id_alat'                => $it['id_alat'],
                     'jumlah'                 => $it['jumlah'],
@@ -172,29 +225,33 @@ class PesananJadwalAlatController extends Controller
             \DB::afterCommit(function () use ($p) {
                 $roles = ['admin','ukmbs','k3l'];
                 
-                $targets = \App\Models\User::whereIn('user_role', $roles)->get();
+                $targets = User::whereIn('user_role', $roles)->get();
+                $userPeminjam = User::find($p->id_user); 
+                $username = $userPeminjam ? $userPeminjam->username : "Unknown User";
 
-                //Filter dan Kirim notif WA HANYA ke  K3L (Fonnte)
+                //Filter dan Kirim notif WA HANYA ke K3L (Fonnte)
                 $k3l_users = $targets->filter(fn($user) => $user->user_role === 'k3l');
 
                 foreach ($k3l_users as $user_k3l) {
                     $no_wa = $user_k3l->no_wa;
                     
                     try {
+                        // Notifikasi WA dengan username
                         Http::withHeaders([
                             'Authorization' => env('FONNTE_TOKEN'),
                         ])->post('https://api.fonnte.com/send', [
                             'target'      => $no_wa,
-                            'message'     => "Anda menerima request peminjaman baru",
-                            'countryCode' => '62', // Kode negara Indonesia
+                            'message'     => "Request peminjaman baru dari {$username}. Silakan cek sistem untuk detailnya.",
+                            'countryCode' => '62', 
                         ]);
                     } catch (\Throwable $e) {
                         \Log::error("Gagal mengirim WA via Fonnte ke K3L ({$user_k3l->username}): " . $e->getMessage());
                     }
                 }
 
+                // Kirim notifikasi sistem/email ke semua target
                 foreach ($targets as $user) {
-                    $user->notify(new \App\Notifications\RequestPeminjamanBaru($p));
+                    $user->notify(new RequestPeminjamanBaru($p));
                 }
             });
 
@@ -205,7 +262,7 @@ class PesananJadwalAlatController extends Controller
         } catch (\Throwable $e) {
             \DB::rollBack();
             return response()->json([
-                'message' => $e->getMessage().' @'.$e->getFile().':'.$e->getLine()
+                'message' => 'Gagal menyimpan pesanan. Error: '.$e->getMessage()
             ], 500);
         }
     }
@@ -264,13 +321,24 @@ class PesananJadwalAlatController extends Controller
 
     public function destroy(string $id)
     {
-        $detail = DetailPesananJadwalAlatModel::where('id_pesanan_pinjam_alat',$id)->firstOrFail();
-        if ($detail->foto_jaminan ?? null) {
-            $path = public_path('/storage/img_upload/pesanan_jadwal/'.$detail->foto_jaminan);
+        // Perbaiki logika destroy jika ingin menghapus header dan semua detail
+        $header = PesananJadwalAlatModel::findOrFail($id);
+        
+        // Hapus foto jaminan
+        if ($header->foto_jaminan) {
+            $path = public_path('/storage/img_upload/pesanan_jadwal/'.$header->foto_jaminan);
             if (file_exists($path)) @unlink($path);
         }
-        $detail->status_pengajuan = 'X';
-        $detail->save();
+
+        // Hapus detail dan kondisi gambar
+        $details = DetailPesananJadwalAlatModel::where('id_pesanan_pinjam_alat', $id)->get();
+        foreach ($details as $d) {
+            if ($d->img_kondisi_awal)  @unlink(public_path('storage/img_upload/kondisi/awal/'.$d->img_kondisi_awal));
+            if ($d->img_kondisi_akhir) @unlink(public_path('storage/img_upload/kondisi/akhir/'.$d->img_kondisi_akhir));
+            $d->delete(); // Hapus detail
+        }
+
+        $header->delete(); // Hapus header
 
         return response()->json(['msg'=>'Data berhasil dihapus'],200);
     }
@@ -289,7 +357,7 @@ class PesananJadwalAlatController extends Controller
             ], 422);
         }
     
-        $d = \App\Models\DetailPesananJadwalAlatModel::where('id_pesanan_pinjam_alat', $id_pesanan)
+        $d = DetailPesananJadwalAlatModel::where('id_pesanan_pinjam_alat', $id_pesanan)
             ->firstOrFail();
     
         // === Upload kondisi awal ===
@@ -451,45 +519,4 @@ class PesananJadwalAlatController extends Controller
     {
         return view('ukmbs.peminjaman.kondisi_index');
     }
-
-    // public function bayar_alat_musik(Request $request)
-    // {
-
-    //     $validate = Validator::make($request->all(), [
-    //         "id_pesanan_pinjam_alat" => "required"
-    //     ]);
-
-    //     $id_pesanan_pinjam_alat = $request->input("id_pesanan_pinjam_alat");
-
-    //     if ($validate->fails()) {
-    //         return response()->json([
-    //             "msg" => $validate->errors()
-    //         ], 422);
-    //     }
-
-    //     $datanya = DB::table('pesanan_pinjam_alat')
-    //         ->where("id_pesanan_pinjam_alat", $id_pesanan_pinjam_alat)
-    //         ->first();
-
-    //     // Set your Merchant Server Key
-    //     \Midtrans\Config::$serverKey = config('midtrans.server_key');
-    //     // Set to Development/Sandbox Environment (default). Set to true for Production Environment (accept real transaction).
-    //     \Midtrans\Config::$isProduction = false;
-    //     // Set sanitization on (default)
-    //     \Midtrans\Config::$isSanitized = true;
-    //     // Set 3DS transaction for credit card to true
-    //     \Midtrans\Config::$is3ds = true;
-
-    //     $params = array(
-    //         'transaction_details' => array(
-    //             'order_id' => $id_pesanan_pinjam_alat,
-    //             'gross_amount' => $datanya->harga_perawatan,
-    //         ),
-    //         'customer_details' => array(
-    //             'id_user' => $datanya->id_user,
-    //         ),
-    //     );
-
-    //     $snapToken = \Midtrans\Snap::getSnapToken($params);
-    // }
 }
